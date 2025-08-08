@@ -2,7 +2,3 @@ flask
 deepface
 flask-cors
 gunicorn
-
-git remote add origin https://github.com/ani29dy/deepface-mood-api.git
-git branch -M main
-git push -u origin main
