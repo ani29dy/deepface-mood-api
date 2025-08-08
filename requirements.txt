@@ -1,5 +1,7 @@
-flask
-tensorflow==1.9.0
-deepface
-flask-cors
-gunicorn
+flask==2.3.2
+flask-cors==4.0.0
+tensorflow==2.11.0
+deepface==0.0.79
+gunicorn==21.2.0
+opencv-python-headless==4.7.0.72
+numpy==1.23.5
