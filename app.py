@@ -1,31 +1,35 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from deepface import DeepFace
-from flask_cors import CORS
 import tempfile
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
-@app.route("/detect-mood", methods=["POST"])
-def detect_mood():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image uploaded"}), 400
+# Allow CORS for your Expo app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change "*" to your app URL in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    image = request.files['image']
+@app.get("/")
+async def root():
+    return {"message": "DeepFace API is running"}
 
-    with tempfile.NamedTemporaryFile(delete=False) as temp:
-        image.save(temp.name)
+@app.post("/detect-mood")
+async def detect_mood(file: UploadFile = File(...)):
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
 
-        try:
-            analysis = DeepFace.analyze(img_path=temp.name, actions=["emotion"])
-            dominant_emotion = analysis[0]["dominant_emotion"]
-            return jsonify({"mood": dominant_emotion})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-@app.route("/")
-def home():
-    return "DeepFace Mood Detection API is running."
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    try:
+        analysis = DeepFace.analyze(tmp_path, actions=["emotion"], enforce_detection=False)
+        return {
+            "dominant_emotion": analysis[0]['dominant_emotion'],
+            "details": analysis[0]['emotion']
+        }
+    except Exception as e:
+        return {"error": str(e)}

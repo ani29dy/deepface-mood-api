@@ -1,6 +1,0 @@
-cmake
-g++
-ffmpeg
-libsm6
-libxext6
-libgl1
