@@ -1,5 +1,7 @@
-fastapi
-uvicorn
 tensorflow==2.12.0
-deepface
-python-multipart
+Flask==2.3.2
+gunicorn==21.2.0
+opencv-python-headless==4.7.0.72
+deepface==0.0.79
+numpy==1.23.5
+Pillow==9.5.0

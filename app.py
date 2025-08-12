@@ -1,35 +1,23 @@
-from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
+from flask import Flask, request, jsonify
 from deepface import DeepFace
-import tempfile
+import os
 
-app = FastAPI()
+app = Flask(__name__)
 
-# Allow CORS for your Expo app
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Change "*" to your app URL in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
-async def root():
-    return {"message": "DeepFace API is running"}
-
-@app.post("/detect-mood")
-async def detect_mood(file: UploadFile = File(...)):
-    # Save uploaded file temporarily
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        tmp.write(await file.read())
-        tmp_path = tmp.name
-
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    if "image" not in request.files:
+        return jsonify({"error": "No image uploaded"}), 400
+    
+    img = request.files["image"]
+    img_path = os.path.join("temp.jpg")
+    img.save(img_path)
+    
     try:
-        analysis = DeepFace.analyze(tmp_path, actions=["emotion"], enforce_detection=False)
-        return {
-            "dominant_emotion": analysis[0]['dominant_emotion'],
-            "details": analysis[0]['emotion']
-        }
+        result = DeepFace.analyze(img_path, actions=["emotion"])
+        return jsonify(result)
     except Exception as e:
-        return {"error": str(e)}
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
