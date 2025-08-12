@@ -1,5 +1,5 @@
 fastapi
 uvicorn
 deepface
-tensorflow==2.12.0
+tensorflow
 python-multipart
